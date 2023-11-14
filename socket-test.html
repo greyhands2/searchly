@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>Insert title here</title>
+
+</head>
+<body>
+    <div>
+        <input placeholder="Enter some text" name="name"  />
+        <div id="suggestions"></div>
+        <div id="results"></div>
+    </div>
+</body>
+
+<script type="text/javascript">
+
+    
+    
+        const input = document.querySelector("input");
+    // Connection opened
+        
+        input.addEventListener("input", (e)=>{
+            
+            const ws = new WebSocket("ws://localhost:3000/socket");
+            
+
+            ws.addEventListener("open", (event) => {
+                ws.send(e.target.value)
+            });
+            
+
+             // Listen for messages
+            ws.addEventListener("message", (event) => {
+                let data = JSON.parse(event.data)
+                
+
+                let {category_suggestion, product_name_suggestion} = data["suggest"]
+
+                let suggestSet = new Set();
+                let result = {};
+                
+
+                category_suggestion[0]["options"].forEach((elem)=>{
+                    suggestSet.add(elem.text)
+                    let currentCategory = elem._source["category"]
+                    if(result[currentCategory]) {
+                        result[currentCategory] = [...result[currentCategory], elem._source]
+                    } else {
+                        result[currentCategory] = [elem._source]
+                    }
+                   
+                    
+                })
+
+                product_name_suggestion[0]["options"].forEach((elem)=>{
+                    suggestSet.add(elem.text)
+                    let currentCategory = elem._source["category"]
+                    if(result[currentCategory]) {
+                        result[currentCategory] = [...result[currentCategory], elem._source]
+                    } else {
+                        result[currentCategory] = [elem._source]
+                    }
+                   
+                    
+                })
+                console.log(result, suggestSet) // log of the results
+                
+            });
+
+        });
+    
+        
+   
+</script>
+</html>
